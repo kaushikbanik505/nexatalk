@@ -7,14 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "docs:sync": "node scripts/generate-learn-source.cjs"
   },
   "dependencies": {
     "@stream-io/video-react-sdk": "^1.14.4",
     "@tanstack/react-query": "^5.74.4",
     "axios": "^1.8.4",
     "lucide-react": "^0.503.0",
-    "nexatalk": "file:..",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",

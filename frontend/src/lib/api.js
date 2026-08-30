@@ -34,6 +34,26 @@ export async function getUserFriends() {
   return response.data;
 }
 
+export async function unfriendUser(userId) {
+  const response = await axiosInstance.delete(`/users/friends/${userId}`);
+  return response.data;
+}
+
+export async function blockUser(userId) {
+  const response = await axiosInstance.post(`/users/block/${userId}`);
+  return response.data;
+}
+
+export async function unblockUser(userId) {
+  const response = await axiosInstance.post(`/users/unblock/${userId}`);
+  return response.data;
+}
+
+export async function getBlockedUsers() {
+  const response = await axiosInstance.get("/users/blocked");
+  return response.data;
+}
+
 export async function getRecommendedUsers() {
   const response = await axiosInstance.get("/users");
   return response.data;
@@ -59,7 +79,57 @@ export async function acceptFriendRequest(requestId) {
   return response.data;
 }
 
+export async function updateProfile(profileData) {
+  const response = await axiosInstance.put("/users/profile", profileData);
+  return response.data;
+}
+
 export async function getStreamToken() {
   const response = await axiosInstance.get("/chat/token");
+  return response.data;
+}
+
+export async function getAdminOverview() {
+  const response = await axiosInstance.get("/admin/overview");
+  return response.data;
+}
+
+export async function getAdminOnlineUsers() {
+  const response = await axiosInstance.get("/admin/online");
+  return response.data;
+}
+
+export async function getAdminUsers() {
+  const response = await axiosInstance.get("/admin/users");
+  return response.data;
+}
+
+export async function getAdminModeration() {
+  const response = await axiosInstance.get("/admin/moderation");
+  return response.data;
+}
+
+export async function banUser(userId) {
+  const response = await axiosInstance.put(`/admin/users/${userId}/ban`);
+  return response.data;
+}
+
+export async function unbanUser(userId) {
+  const response = await axiosInstance.put(`/admin/users/${userId}/unban`);
+  return response.data;
+}
+
+export async function promoteGroupAdmin(channelId, userId) {
+  const response = await axiosInstance.put(`/groups/${channelId}/admins/${userId}`);
+  return response.data;
+}
+
+export async function demoteGroupAdmin(channelId, userId) {
+  const response = await axiosInstance.delete(`/groups/${channelId}/admins/${userId}`);
+  return response.data;
+}
+
+export async function sendAiBuddyMessage(message, history) {
+  const response = await axiosInstance.post("/ai/chat", { message, history });
   return response.data;
 }

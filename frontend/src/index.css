@@ -2,26 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ties Stream Chat's dark theme palette to this app's own daisyUI "night"
+   theme tokens instead of Stream's generic dark grey, so the chat pane reads
+   as part of NexaTalk rather than a third-party widget dropped on the page.
+   Stream's own <Channel> re-declares the bare .str-chat class on an inner
+   wrapper, which resets these custom properties back to their light defaults
+   for everything below it - targeting ".str-chat__theme-dark .str-chat" (and
+   the same-element case) beats that on specificity, not just source order. */
+.str-chat__theme-dark,
+.str-chat__theme-dark .str-chat {
+  --str-chat__primary-color: oklch(var(--p));
+  --str-chat__active-primary-color: oklch(var(--p));
+  --str-chat__on-primary-color: oklch(var(--pc));
+  --str-chat__background-color: oklch(var(--b1));
+  --str-chat__secondary-background-color: oklch(var(--b2));
+  --str-chat__primary-surface-color: oklch(var(--p) / 0.16);
+  --str-chat__primary-surface-color-low-emphasis: oklch(var(--p) / 0.08);
+  --str-chat__surface-color: oklch(var(--b3));
+  --str-chat__secondary-surface-color: oklch(var(--b2));
+  --str-chat__tertiary-surface-color: oklch(var(--b2));
+  --str-chat__text-color: oklch(var(--bc));
+  --str-chat__text-low-emphasis-color: oklch(var(--bc) / 0.55);
+  --str-chat__own-message-bubble-background-color: oklch(var(--p) / 0.18);
+  --str-chat__own-message-bubble-color: oklch(var(--bc));
+  --str-chat__typing-indicator-background-color: oklch(var(--b2) / 0.92);
+  --str-chat__typing-indicator-color: oklch(var(--bc) / 0.7);
+  --str-chat__typing-indicator-dot-background-color: oklch(var(--p));
+  --str-chat__typing-indicator-border-radius: 999px;
+}
+
+.str-chat__typing-indicator {
+  backdrop-filter: blur(6px);
+  inset-inline-start: 0.75rem !important;
+  inset-inline-end: auto !important;
+  inset-block-end: 0.5rem !important;
+  width: fit-content;
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 8px oklch(0% 0 0 / 0.25);
+}
+
 .str-chat__channel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(to bottom, #c9e8c9, #b7e7bb);
   height: 100%;
+  background: oklch(var(--b1));
 }
 
 .str-chat__container {
-  max-width: 1200px;
   width: 100%;
-  height: 80% !important;
-  margin: 0 auto !important;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  height: 100% !important;
+  max-width: none;
+  margin: 0 !important;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .str-chat__list {
-  background-color: #ffffff;
+  background-color: transparent;
   padding: 12px;
 }
 
@@ -29,6 +65,152 @@
   display: none;
 }
 
+.str-chat__list {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(var(--b3)) transparent;
+}
+.str-chat__list::-webkit-scrollbar {
+  width: 6px;
+}
+.str-chat__list::-webkit-scrollbar-thumb {
+  background: oklch(var(--b3));
+  border-radius: 999px;
+}
+
+/* Message bubbles: rounded, and the sender's own messages pick up the app's
+   primary->secondary brand gradient (same one used on the logo/CTAs) instead
+   of Stream's flat default, so a glance at the thread reads as NexaTalk. */
+.str-chat__message-bubble {
+  border-radius: 1.1rem !important;
+  padding: 0.55rem 0.9rem !important;
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.15);
+}
+.str-chat__message--me .str-chat__message-bubble {
+  background: linear-gradient(135deg, oklch(var(--p)), oklch(var(--s))) !important;
+  color: oklch(var(--pc)) !important;
+}
+.str-chat__message--other .str-chat__message-bubble {
+  background: oklch(var(--b3)) !important;
+}
+
+.str-chat__avatar-image,
+.str-chat__avatar-fallback {
+  border-radius: 999px !important;
+}
+
+.str-chat__date-separator-date {
+  color: oklch(var(--bc) / 0.45);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Input bar: a floating rounded-full pill instead of a flat strip that
+   butts up against the window edge, matching daisyUI inputs elsewhere. */
 .str-chat__message-input {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid oklch(var(--b3));
+  background: oklch(var(--b2));
+  padding: 0.75rem 1rem;
+}
+.str-chat__message-textarea-container {
+  border-radius: 999px !important;
+  background: oklch(var(--b1)) !important;
+  border: 1px solid oklch(var(--b3)) !important;
+  padding: 0.25rem 0.5rem !important;
+}
+.str-chat__message-textarea-container:focus-within {
+  border-color: oklch(var(--p)) !important;
+  box-shadow: 0 0 0 2px oklch(var(--p) / 0.25);
+}
+.str-chat__send-button {
+  color: oklch(var(--p)) !important;
+}
+.str-chat__send-button:hover:not(:disabled) {
+  color: oklch(var(--s)) !important;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.animate-twinkle {
+  animation-name: twinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-110vh) translateX(var(--drift, 20px));
+    opacity: 0;
+  }
+}
+
+.animate-float-up {
+  animation-name: float-up;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes mascot-wave {
+  0%,
+  55%,
+  100% {
+    transform: rotate(0deg);
+  }
+  61% {
+    transform: rotate(-6deg);
+  }
+  68% {
+    transform: rotate(4deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+  82% {
+    transform: rotate(3deg);
+  }
+  89% {
+    transform: rotate(-1.5deg);
+  }
+  95% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-mascot-wave {
+  animation: mascot-wave 6s ease-in-out 1.4s infinite;
+  transform-origin: 50% 100%;
+}
+
+@keyframes code-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-code-reveal {
+  animation: code-reveal 0.2s ease-out;
 }

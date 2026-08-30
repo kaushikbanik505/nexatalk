@@ -74,6 +74,10 @@ export async function login(req, res) {
     const isPasswordCorrect = await user.matchPassword(password);
     if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid email or password" });
 
+    if (user.isBanned) {
+      return res.status(403).json({ message: "This account has been suspended" });
+    }
+
     await upsertStreamUser({
       id: user._id.toString(),
       name: user.fullName,

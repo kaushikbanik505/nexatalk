@@ -3,6 +3,7 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
@@ -38,11 +39,22 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/ai", aiRoutes);
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+// Only present when this same service also builds/serves the frontend
+// (a combined single-service deploy). When the frontend is deployed
+// separately (e.g. on Vercel, with this API on Render), frontend/dist
+// never gets built here, so this backend has nothing to fall back to
+// for a non-API route - respond with a plain status instead of a
+// dist/index.html-not-found 500.
+const frontendDistPath = path.join(__dirname, "../frontend/dist");
+if (process.env.NODE_ENV === "production" && fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+    res.sendFile(path.join(frontendDistPath, "index.html"));
+  });
+} else if (process.env.NODE_ENV === "production") {
+  app.get("/", (req, res) => {
+    res.status(200).json({ status: "ok", message: "NexaTalk API is running" });
   });
 }
 

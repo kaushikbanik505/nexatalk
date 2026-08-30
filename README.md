@@ -4,6 +4,8 @@
 
 ### Real conversations, with real people.
 
+🔗 **Live:** [nexatalk-weld.vercel.app](https://nexatalk-weld.vercel.app)
+
 Most language apps hand you flashcards and gamified streaks but never actually put you in front of another person. NexaTalk skips the drills: sign up, get matched by the language you're learning, and talk — real-time chat, 1-on-1 & group video calls, and a Gemini-powered AI buddy to lean on in between.
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
@@ -360,11 +362,20 @@ npm start       # serves the API + the built frontend from one process
 
 ## 🚢 Deployment
 
-NexaTalk is built to deploy as a **single web service** (Render, Railway, Fly.io, or any Node host):
-- Build command: `npm run build`
-- Start command: `npm start`
-- Set all the backend env vars above on the host, with `NODE_ENV=production` and `CLIENT_URL` set to your live domain
-- Allow your host's outbound traffic in MongoDB Atlas → Network Access
+The live deployment above runs as **two separate services**, each redeploying automatically on every push to `main`:
+
+| | Service | Root Directory | Build | Start / Output |
+|---|---|---|---|---|
+| 🖥️ | **Backend** — [Render](https://render.com) | `backend` | `npm install` | `npm start` |
+| 🌐 | **Frontend** — [Vercel](https://vercel.com) | `frontend` | `npm run build` | Output dir `dist` |
+
+Because the frontend and backend are on different domains, a few things have to line up that wouldn't matter in a single-service deploy:
+- **Backend env vars**: all the usual ones, plus `NODE_ENV=production` and `CLIENT_URL` set to the exact Vercel domain (this is what flips the session cookie to `SameSite=None; Secure` so it survives a cross-site request — without it, login silently doesn't persist).
+- **Frontend env vars**: `VITE_STREAM_API_KEY` and `VITE_API_URL` (the Render backend's URL, no trailing slash).
+- **`frontend/vercel.json`** rewrites every path to `index.html`, so a direct visit or refresh on a client-side route (e.g. `/chat/:id`) doesn't 404 against Vercel's static host.
+- MongoDB Atlas → Network Access must allow Render's outbound traffic (`0.0.0.0/0` on the free tier, since the IP isn't static).
+
+Prefer one service instead? The codebase still supports it: point a single Node host (Render, Railway, Fly.io, ...) at the repo root with build command `npm run build` and start command `npm start` — `backend/src/server.js` will serve the built frontend itself, and none of the cross-origin env vars above are needed.
 
 ## 🤝 Contributing
 

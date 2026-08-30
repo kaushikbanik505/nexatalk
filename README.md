@@ -369,10 +369,12 @@ The live deployment above runs as **two separate services**, each redeploying au
 | 🖥️ | **Backend** — [Render](https://render.com) | `backend` | `npm install` | `npm start` |
 | 🌐 | **Frontend** — [Vercel](https://vercel.com) | `frontend` | `npm run build` | Output dir `dist` |
 
-Because the frontend and backend are on different domains, a few things have to line up that wouldn't matter in a single-service deploy:
-- **Backend env vars**: all the usual ones, plus `NODE_ENV=production` and `CLIENT_URL` set to the exact Vercel domain (this is what flips the session cookie to `SameSite=None; Secure` so it survives a cross-site request — without it, login silently doesn't persist).
-- **Frontend env vars**: `VITE_STREAM_API_KEY` and `VITE_API_URL` (the Render backend's URL, no trailing slash).
-- **`frontend/vercel.json`** rewrites every path to `index.html`, so a direct visit or refresh on a client-side route (e.g. `/chat/:id`) doesn't 404 against Vercel's static host.
+Two domains means the browser would normally see the login cookie as third-party (set by the Render domain while the page is on the Vercel domain) — and third-party cookie blocking, on by default in a growing number of browsers, silently drops it, making login look like it fails for no reason. `frontend/vercel.json` avoids the problem entirely instead of just tolerating it: it **rewrites `/api/*` to the Render backend server-side**, so the browser only ever talks to its own origin (`nexatalk-weld.vercel.app`) and never sees the Render domain directly. The cookie ends up same-origin, which every browser accepts unconditionally.
+
+What that means in practice:
+- **Backend env vars**: all the usual ones, plus `NODE_ENV=production` and `CLIENT_URL` set to the Vercel domain (used for the CORS allow-list; harmless once requests are proxied, since a proxied request either carries no `Origin` header or one that already matches).
+- **Frontend env vars**: just `VITE_STREAM_API_KEY` — the API's location is defined once in `frontend/vercel.json`, not duplicated into an env var.
+- **`frontend/vercel.json`** also rewrites every other path to `index.html`, so a direct visit or refresh on a client-side route (e.g. `/chat/:id`) doesn't 404 against Vercel's static host.
 - MongoDB Atlas → Network Access must allow Render's outbound traffic (`0.0.0.0/0` on the free tier, since the IP isn't static).
 
 Prefer one service instead? The codebase still supports it: point a single Node host (Render, Railway, Fly.io, ...) at the repo root with build command `npm run build` and start command `npm start` — `backend/src/server.js` will serve the built frontend itself, and none of the cross-origin env vars above are needed.

@@ -199,7 +199,7 @@ const ProfileCard = ({ variant = "sidebar" }) => {
               </button>
               <button
                 type="button"
-                onClick={logoutMutation}
+                onClick={() => logoutMutation()}
                 className="btn btn-outline btn-sm flex-1 gap-1.5 hover:bg-error hover:text-error-content hover:border-error transition-colors"
               >
                 <LogOutIcon className="size-3.5" />

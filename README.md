@@ -18,6 +18,18 @@ A full-stack language-exchange platform: real-time chat, 1-on-1 & group video ca
 
 ---
 
+## 📚 Table of Contents
+
+- [What is NexaTalk?](#-what-is-nexatalk)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#️-architecture)
+- [API Reference](#-api-reference)
+- [Getting Started](#️-getting-started)
+- [Deployment](#-deployment)
+- [Roadmap](#️-roadmap)
+- [License](#-license)
+
 ## ✨ What is NexaTalk?
 
 NexaTalk connects language learners with native/fluent speakers for real conversations — live chat, video calls, and an AI buddy to lean on in between. Sign up, get matched by the language you're learning, and start talking.
@@ -74,6 +86,183 @@ nexatalk/
 ```
 
 In production, `backend/src/server.js` serves the built frontend (`frontend/dist`) directly and falls back to `index.html` for client-side routing — one service, one deploy.
+
+## 📡 API Reference
+
+Base URL: **`/api`** (e.g. `http://localhost:5001/api` in development).
+
+Auth is a JWT issued as an **httpOnly cookie** (`jwt`) on signup/login — the browser sends it automatically with `withCredentials: true`, there's no `Authorization: Bearer` header to manage. 🔒 marks a route that requires that cookie via the `protectRoute` middleware; 🛡️ marks one that additionally requires `role: "admin"` via `protectAdminRoute`.
+
+### Authentication — `/api/auth`
+
+| Method | Endpoint | Auth | Description |
+|---|---|:---:|---|
+| `POST` | `/signup` | — | Create an account |
+| `POST` | `/login` | — | Log in |
+| `POST` | `/logout` | — | Clear the session cookie |
+| `POST` | `/onboarding` | 🔒 | Complete the onboarding profile (name, bio, languages, location) |
+| `GET` | `/me` | 🔒 | Return the current authenticated user |
+
+<details>
+<summary><code>POST /api/auth/signup</code></summary>
+
+```jsonc
+// Request body
+{
+  "fullName": "Ada Lovelace",
+  "email": "ada@example.com",
+  "password": "min6chars"
+}
+```
+```jsonc
+// 201 Created — also sets the `jwt` cookie
+{ "success": true, "user": { "_id": "...", "fullName": "Ada Lovelace", "email": "ada@example.com", "profilePic": "...", "isOnboarded": false } }
+```
+`400` if a field is missing, the password is under 6 characters, the email is malformed, or the email is already registered.
+</details>
+
+<details>
+<summary><code>POST /api/auth/login</code></summary>
+
+```jsonc
+// Request body
+{ "email": "ada@example.com", "password": "min6chars" }
+```
+```jsonc
+// 200 OK — sets the `jwt` cookie
+{ "success": true, "user": { "_id": "...", "fullName": "Ada Lovelace", "...": "..." } }
+```
+`401` on a wrong email/password, `403` if the account has been banned.
+</details>
+
+<details>
+<summary><code>POST /api/auth/onboarding</code> 🔒</summary>
+
+```jsonc
+// Request body
+{
+  "fullName": "Ada Lovelace",
+  "bio": "Learning Spanish, native English speaker.",
+  "nativeLanguage": "english",
+  "learningLanguage": "spanish",
+  "location": "London, UK"
+}
+```
+```jsonc
+// 200 OK
+{ "success": true, "user": { "...": "...", "isOnboarded": true } }
+```
+`400` with a `missingFields` array naming whichever required fields were omitted.
+</details>
+
+### Users & Social — `/api/users`
+*(every route below requires* 🔒 *)*
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Recommended learners (excludes yourself, friends, and anyone blocked either direction) |
+| `GET` | `/friends` | Your current friends list |
+| `DELETE` | `/friends/:id` | Remove a friend |
+| `PUT` | `/profile` | Update your profile |
+| `POST` | `/friend-request/:id` | Send a friend request |
+| `PUT` | `/friend-request/:id/accept` | Accept an incoming request |
+| `GET` | `/friend-requests` | Incoming pending requests + your recently-accepted outgoing ones |
+| `GET` | `/outgoing-friend-requests` | Requests you've sent that are still pending |
+| `GET` | `/blocked` | Users you've blocked |
+| `POST` | `/block/:id` | Block a user (also unfriends and cancels any pending request both ways) |
+| `POST` | `/unblock/:id` | Unblock a user |
+
+<details>
+<summary><code>PUT /api/users/profile</code></summary>
+
+```jsonc
+// Request body (all optional — only provided fields are updated)
+{ "fullName": "Ada L.", "bio": "...", "phone": "+44...", "links": { "instagram": "...", "twitter": "..." }, "location": "London, UK", "profilePic": "data:image/png;base64,..." }
+```
+```jsonc
+// 200 OK
+{ "success": true, "user": { "...": "..." } }
+```
+</details>
+
+<details>
+<summary><code>POST /api/users/friend-request/:id</code></summary>
+
+```jsonc
+// 201 Created
+{ "_id": "...", "sender": "<myId>", "recipient": "<id>", "status": "pending" }
+```
+`400` if you're already friends, a request already exists between you two, or you targeted yourself. `403` if either of you has blocked the other.
+</details>
+
+### Chat & Video Tokens — `/api/chat`
+
+| Method | Endpoint | Auth | Description |
+|---|---|:---:|---|
+| `GET` | `/token` | 🔒 | Issue a short-lived [Stream](https://getstream.io) token, used to connect the chat + video SDKs client-side |
+
+```jsonc
+// 200 OK
+{ "token": "eyJhbGciOi..." }
+```
+
+### Groups — `/api/groups`
+
+| Method | Endpoint | Auth | Description |
+|---|---|:---:|---|
+| `PUT` | `/:channelId/admins/:userId` | 🔒 | Promote a group member to admin (caller must be the group's creator or an existing admin) |
+| `DELETE` | `/:channelId/admins/:userId` | 🔒 | Demote a group admin (the original creator can't be demoted) |
+
+*(Group creation and messaging happen directly against the Stream Chat SDK on the client, authenticated with the token above — these two routes only cover the admin-role logic that lives in NexaTalk's own database of record.)*
+
+### AI Buddy — `/api/ai`
+
+| Method | Endpoint | Auth | Description |
+|---|---|:---:|---|
+| `POST` | `/chat` | 🔒 | Send a message to the Gemini-powered AI buddy |
+
+Rate-limited to **8 requests per 60 seconds per user** to protect the shared Gemini quota — a `429` is returned past that.
+
+```jsonc
+// Request body
+{ "message": "How do I say 'nice to meet you' in Spanish?", "history": [ /* optional prior turns */ ] }
+```
+```jsonc
+// 200 OK
+{ "reply": "You'd say “Mucho gusto” — ..." }
+```
+
+### Admin — `/api/admin`
+*(every route below requires* 🛡️ *`role: "admin"`, in addition to being logged in)*
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/overview` | Dashboard stats: total users, users online now, signups in the last 24h, pending friend requests, requests accepted in the last 24h, and a 7-day signup chart |
+| `GET` | `/online` | Everyone active in the last 2 minutes |
+| `GET` | `/users` | Every user, with role/ban status |
+| `GET` | `/moderation` | Signups and friend-request activity from the last 24h |
+| `PUT` | `/users/:id/ban` | Ban a user (can't ban yourself or another admin) |
+| `PUT` | `/users/:id/unban` | Lift a ban |
+
+<details>
+<summary><code>GET /api/admin/overview</code></summary>
+
+```jsonc
+// 200 OK
+{
+  "totalUsers": 128,
+  "onlineNow": 4,
+  "newSignups24h": 6,
+  "pendingRequests": 11,
+  "acceptedRequests24h": 3,
+  "signupsByDay": [
+    { "date": "2026-08-24", "count": 2 },
+    { "date": "2026-08-25", "count": 5 }
+    // ...7 days total, oldest first
+  ]
+}
+```
+</details>
 
 ## ⚙️ Getting Started
 

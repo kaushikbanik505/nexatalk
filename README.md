@@ -20,7 +20,9 @@ Most language apps hand you flashcards and gamified streaks but never actually p
 </div>
 
 ---
- Directory structure:
+## 📂 Project Structure
+
+```text
 └── kaushikbanik505-nexatalk/
     ├── README.md
     ├── package.json
@@ -134,6 +136,7 @@ Most language apps hand you flashcards and gamified streaks but never actually p
                 ├── SignUpPage.jsx
                 ├── TermsPage.jsx
                 └── WhatsNextPage.jsx
+```
 
 ## 📚 Table of Contents
 

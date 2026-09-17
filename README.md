@@ -388,6 +388,7 @@ This has been an incrementally-built solo project — if you're picking up the c
 - Check mobile too — this app is explicitly designed and QA'd mobile-first, not as an afterthought.
 
 ## 🗺️ Roadmap
+<img src="https://github.com/user-attachments/assets/6506f078-13fb-4b26-b75c-8a6c9940a19b" alt="diagram (1)" style="max-width: 100%; height: auto;">
 
 Ongoing feature ideas and what's shipped so far are tracked on the in-app `/whats-next` page.
 

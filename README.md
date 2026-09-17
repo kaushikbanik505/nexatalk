@@ -20,6 +20,120 @@ Most language apps hand you flashcards and gamified streaks but never actually p
 </div>
 
 ---
+ Directory structure:
+└── kaushikbanik505-nexatalk/
+    ├── README.md
+    ├── package.json
+    ├── backend/
+    │   ├── package.json
+    │   ├── .env.example
+    │   └── src/
+    │       ├── server.js
+    │       ├── controllers/
+    │       │   ├── admin.controller.js
+    │       │   ├── ai.controller.js
+    │       │   ├── auth.controller.js
+    │       │   ├── chat.controller.js
+    │       │   ├── group.controller.js
+    │       │   └── user.controller.js
+    │       ├── lib/
+    │       │   ├── db.js
+    │       │   └── stream.js
+    │       ├── middleware/
+    │       │   ├── admin.middleware.js
+    │       │   ├── aiRateLimit.js
+    │       │   └── auth.middleware.js
+    │       ├── models/
+    │       │   ├── FriendRequest.js
+    │       │   └── User.js
+    │       ├── routes/
+    │       │   ├── admin.route.js
+    │       │   ├── ai.route.js
+    │       │   ├── auth.route.js
+    │       │   ├── chat.route.js
+    │       │   ├── group.route.js
+    │       │   └── user.route.js
+    │       └── services/
+    │           └── geminiChat.js
+    └── frontend/
+        ├── README.md
+        ├── eslint.config.js
+        ├── index.html
+        ├── package.json
+        ├── postcss.config.js
+        ├── tailwind.config.js
+        ├── vercel.json
+        ├── vite.config.js
+        ├── .env.example
+        ├── scripts/
+        │   └── generate-learn-source.cjs
+        └── src/
+            ├── App.jsx
+            ├── index.css
+            ├── main.jsx
+            ├── components/
+            │   ├── AiBuddyFab.jsx
+            │   ├── AiBuddyModal.jsx
+            │   ├── Avatar.jsx
+            │   ├── BlockedUsersModal.jsx
+            │   ├── ChatHeader.jsx
+            │   ├── ChatLoader.jsx
+            │   ├── CodeFileExplorer.jsx
+            │   ├── ContactInfoModal.jsx
+            │   ├── EditProfileModal.jsx
+            │   ├── FriendCard.jsx
+            │   ├── GroupInfoModal.jsx
+            │   ├── HomeButton.jsx
+            │   ├── Layout.jsx
+            │   ├── Navbar.jsx
+            │   ├── NewGroupModal.jsx
+            │   ├── NoFriendsFound.jsx
+            │   ├── NoNotificationsFound.jsx
+            │   ├── PageLoader.jsx
+            │   ├── ProfileCard.jsx
+            │   ├── Sidebar.jsx
+            │   ├── SidebarMascot.jsx
+            │   └── StarryBackground.jsx
+            ├── constants/
+            │   └── index.js
+            ├── data/
+            │   ├── backendFilesMeta.js
+            │   └── frontendFilesMeta.js
+            ├── hooks/
+            │   ├── useAuthUser.js
+            │   ├── useLogin.js
+            │   ├── useLogout.js
+            │   ├── useMessageNotifications.js
+            │   └── useSignUp.js
+            ├── lib/
+            │   ├── api.js
+            │   ├── axios.js
+            │   ├── highlightCode.js
+            │   ├── presence.js
+            │   ├── streamClient.js
+            │   ├── streamVideoClient.js
+            │   └── utils.js
+            └── pages/
+                ├── AboutPage.jsx
+                ├── AdminPage.jsx
+                ├── BackendFilesPage.jsx
+                ├── CallPage.jsx
+                ├── ChatPage.jsx
+                ├── DeveloperPage.jsx
+                ├── FriendsPage.jsx
+                ├── FrontendFilesPage.jsx
+                ├── HomePage.jsx
+                ├── LandingPage.jsx
+                ├── LearnersPage.jsx
+                ├── LearnPage.jsx
+                ├── LoginPage.jsx
+                ├── MessagesPage.jsx
+                ├── NotificationsPage.jsx
+                ├── OnboardingPage.jsx
+                ├── PrivacyPage.jsx
+                ├── SignUpPage.jsx
+                ├── TermsPage.jsx
+                └── WhatsNextPage.jsx
 
 ## 📚 Table of Contents
 
